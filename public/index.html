@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merje - Wayfinding Destination Finder</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #fff; font-family: 'Instrument Sans', system-ui, sans-serif; color: #1a1a1a; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+var useState = React.useState;
+var useCallback = React.useCallback;
+
+const LOGO = "data:image/png;base64,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";
+
+const DEST = {
+  "BASE CATEGORIES": {
+    "ATTRACTIONS": [
+      { n: "Arboreta & Botanical Gardens", d: "Live plants cultivated for scientific, educational, and ornamental purposes. Open to general public." },
+      { n: "Arenas", d: "Stadia, conference centers, auditoriums, civic or convention centers." },
+      { n: "Conference Centers", d: "Sites hosting public events with min. 30,000 sq. ft. of flexible meeting space." },
+      { n: "Destination Streets", d: "Street segments recognized as unique places and visitor attractions." },
+      { n: "Fairgrounds", d: "County and state fairgrounds." },
+      { n: "Racetracks & Speedways", d: "Permanent facilities for organized horse or automobile racing events." },
+      { n: "Scenic Overlooks", d: "Areas for observing significant geology, botanical resources, or expanses of land/water." },
+      { n: "Unique Natural Areas", d: "Riverfronts, caverns, waterfalls, caves, or special rock formations." },
+      { n: "Zoos & Aquariums", d: "Facilities with animals, reptiles or fish, open to the general public." }
+    ],
+    "CULTURAL / INSTITUTIONAL": [
+      { n: "Colleges or Universities", d: "Nationally accredited, degree-granting institutions with 5+ acre campus." },
+      { n: "Hospitals", d: "24-hour emergency care with a doctor on duty at all times." },
+      { n: "Government Institutions", d: "Centers operated by municipality, county, state, or federal government, open to public." },
+      { n: "Libraries", d: "Repositories for literary and artistic materials operated by municipality or non-profit." },
+      { n: "Museums", d: "Facilities exhibiting works of artistic, historical, or scientific value." },
+      { n: "Observatories", d: "Facilities to observe astronomical, meteorological, or natural phenomena." },
+      { n: "Religious Sites", d: "Shrines, grottos, or sites of unique religious nature with min. 20 visitors/day." },
+      { n: "Theaters & Performing Arts", d: "Not-for-profit performing arts facilities with min. 200 capacity." }
+    ],
+    "DISTRICTS": [
+      { n: "Arts & Cultural Districts", d: "Concentration of arts and cultural institutions within a municipality." },
+      { n: "Business Districts", d: "Officially designated business district with offices, shops, and dining." },
+      { n: "Entertainment Districts", d: "Clusters of shopping, dining, and attractions catering to visitors." },
+      { n: "Historic Districts", d: "Listed on or eligible for the National Register of Historic Places." },
+      { n: "Medical Districts", d: "Concentrated cluster of healthcare facilities and educational institutions." },
+      { n: "Sports Districts", d: "Complex of stadia, arenas, and sporting facilities." },
+      { n: "University Districts", d: "Concentrated cluster of educational facilities and institutions." },
+      { n: "Urban Neighborhoods", d: "Residential communities with formal associations meeting 4+ times/year." }
+    ],
+    "GOVERNMENT": [
+      { n: "Courthouses & Gov Buildings", d: "Public buildings used for official legal activities, open to public." },
+      { n: "High Schools", d: "Public education facilities with performing arts/exhibits, min. 150 capacity." },
+      { n: "Military Bases", d: "State or federal facilities for military training or support." }
+    ],
+    "HISTORICAL / ARCHITECTURAL": [
+      { n: "Historic Sites", d: "Structures/places of historical or architectural significance on National Register." }
+    ],
+    "RECREATIONAL": [
+      { n: "Beaches, Piers & Waterfronts", d: "Areas with river/lake access, open 180+ days/year." },
+      { n: "Boat Launches", d: "Public facilities for launching boats with vehicle/trailer parking." },
+      { n: "Campgrounds", d: "Facilities with 20+ overnight sites, operating 6+ months/year." },
+      { n: "Canoeing, Rafting & Kayaking", d: "Public areas with established paddling facilities." },
+      { n: "Golf Courses", d: "Public golf facilities with at least 9 holes of play." },
+      { n: "Hiking & Biking Trails", d: "Publicly accessible trails with established trailheads and parking." },
+      { n: "Horseback Riding Areas", d: "Areas designated for horseback/pony riding for the public." },
+      { n: "Hunting & Fishing Areas", d: "State-designated areas under Dept. of Agriculture or Fish and Wildlife." },
+      { n: "National/State/Regional Parks", d: "Parks and forests under state or federal jurisdiction, open to public." },
+      { n: "County Parks", d: "Parks under county jurisdiction with public facilities." },
+      { n: "Municipal Parks", d: "Municipal parks with broad appeal beyond a single neighborhood." },
+      { n: "Local Sports Facilities", d: "Little league fields, youth athletics, BMX courses, skateboard parks." },
+      { n: "Ski Areas", d: "Downhill or cross-country ski areas with equipment rentals." },
+      { n: "Winter Sports Areas", d: "Snowmobile trails, ice skating, snowboarding, toboggan runs." },
+      { n: "Water Skiing", d: "Areas for water skiing, jet skiing, or motorboats." }
+    ],
+    "TOURIST SERVICES": [
+      { n: "Visitor Information Centers", d: "Facilities providing tourist information and services with adequate parking." }
+    ],
+    "TRANSPORTATION": [
+      { n: "Airports", d: "Public-use licensed facilities for aircraft landing and passenger service." },
+      { n: "Cruise Ship Terminals", d: "Passenger vessel access points with docking and public parking." },
+      { n: "Ferries", d: "Passenger-carrying vessels with docking and legal parking." },
+      { n: "Heritage Roads & Trails", d: "DOT or federally recognized historic/heritage routes." },
+      { n: "Parking Facilities", d: "Public parking lots, garages, and decks." },
+      { n: "Railroad & Bus Stations", d: "Passenger terminals for transit ticketing and boarding." }
+    ]
+  },
+  "EXPANDED CATEGORIES": {
+    "COMMERCIAL DESTINATIONS": [
+      { n: "Adventure Tours", d: "Guided outdoor tours operating 9+ months/year." },
+      { n: "Agri-Tourism", d: "Working farms/ranches of 200+ acres with 3+ activities." },
+      { n: "Amusement Parks", d: "Permanent entertainment facilities open 5+ months/year." },
+      { n: "Artist / Craftsman Studios", d: "Working studios of 3,500+ sq. ft. with public demos." },
+      { n: "Bed & Breakfasts", d: "Rural private residences with 10 or fewer rooms." },
+      { n: "Breweries", d: "Licensed sites producing 250,000+ barrels/year with tours." },
+      { n: "Commerce Parks", d: "Commercial manufacturing complexes of 25+ acres." },
+      { n: "Country Inns", d: "Rural facilities with 25 or fewer rooms and dining." },
+      { n: "Drive-In Theatres", d: "Outdoor movie facilities operating 30+ days/year." },
+      { n: "Facility Tours", d: "Private businesses offering public tours, 1,000+ employees." },
+      { n: "Gaming Entities", d: "Licensed gaming facilities of 100,000+ sq. ft." },
+      { n: "International Markets", d: "Specialty food markets, iconic landmarks of 25+ years." },
+      { n: "Historic Hotels", d: "Hotels in 50+ year-old buildings on National Register." },
+      { n: "Off-Track Betting", d: "Off-premise wagering facilities per local regulations." },
+      { n: "Resorts", d: "75+ room facilities with recreation as primary attraction." },
+      { n: "Roadside Farm Markets", d: "Retail farm sales, open 2+ days/week." },
+      { n: "Rural Restaurants", d: "Non-franchise restaurants in rural areas, 20+ seats." },
+      { n: "Neighborhood Shopping Centers", d: "Groups of 15+ shops as neighborhood nodes." },
+      { n: "Specialty Shopping Centers", d: "12+ specialty shops with tourist interest." },
+      { n: "Sports Tourism Facilities", d: "Facilities hosting 12+ multi-day tournaments/year." },
+      { n: "Wineries & Vineyards", d: "Licensed wineries, 3,000+ vines, open 1,500+ hrs/year." },
+      { n: "Water Tours", d: "Guided water tours with docking and parking." }
+    ]
+  }
+};
+
+const allDest = [];
+Object.entries(DEST).forEach(function(tierEntry) {
+  var tier = tierEntry[0];
+  var cats = tierEntry[1];
+  Object.entries(cats).forEach(function(catEntry) {
+    var cat = catEntry[0];
+    var items = catEntry[1];
+    items.forEach(function(item) {
+      allDest.push({ name: item.n, desc: item.d, category: cat, tier: tier });
+    });
+  });
+});
+
+var CAT_COLORS = {
+  "ATTRACTIONS":"#8B6914","CULTURAL / INSTITUTIONAL":"#4A5568","DISTRICTS":"#6B8F3C",
+  "GOVERNMENT":"#8B6914","HISTORICAL / ARCHITECTURAL":"#7B5B3A","RECREATIONAL":"#3D7A4A",
+  "TOURIST SERVICES":"#C05621","TRANSPORTATION":"#2C5F7C","COMMERCIAL DESTINATIONS":"#9B2226",
+  "CUSTOM":"#7B2CBF"
+};
+
+var GREEN = "#8DC63F";
+var WARM = "#8B7355";
+
+function download(content, name, type) {
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], { type: type }));
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function csvEsc(s) {
+  var v = String(s == null ? "" : s);
+  if (v.indexOf(",") >= 0 || v.indexOf('"') >= 0 || v.indexOf("\n") >= 0) {
+    return '"' + v.replace(/"/g, '""') + '"';
+  }
+  return v;
+}
+
+function xmlEsc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function App() {
+  var _a = useState(""), city = _a[0], setCity = _a[1];
+  var _b = useState(null), results = _b[0], setResults = _b[1];
+  var _c = useState(false), loading = _c[0], setLoading = _c[1];
+  var _d = useState(null), selCat = _d[0], setSelCat = _d[1];
+  var _e = useState(null), expanded = _e[0], setExpanded = _e[1];
+  var _f = useState(false), showRef = _f[0], setShowRef = _f[1];
+  var _g = useState(null), geo = _g[0], setGeo = _g[1];
+  var _h = useState(false), geoLoad = _h[0], setGeoLoad = _h[1];
+  var _i = useState(""), status = _i[0], setStatus = _i[1];
+  var _j = useState(""), customInput = _j[0], setCustomInput = _j[1];
+  var _k = useState([]), customDests = _k[0], setCustomDests = _k[1];
+  var _l = useState(false), addingCustom = _l[0], setAddingCustom = _l[1];
+  var _m = useState(false), showAddPanel = _m[0], setShowAddPanel = _m[1];
+
+  function apiCall(msgs, maxTok) {
+    return fetch("/api/claude", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: maxTok || 1000,
+        messages: msgs
+      })
+    }).then(function(r) { return r.json(); })
+      .then(function(d) {
+        var text = "";
+        for (var i = 0; i < d.content.length; i++) {
+          if (d.content[i].text) text += d.content[i].text;
+        }
+        return text.replace(/```json/g, "").replace(/```/g, "").trim();
+      });
+  }
+
+  function search() {
+    if (!city.trim()) return;
+    setLoading(true); setSelCat(null); setExpanded(null); setGeo(null); setStatus(""); setCustomDests([]);
+    var catNames = allDest.map(function(d) { return d.name; }).join(", ");
+    var prompt = 'For "' + city + '", identify which wayfinding destination categories have real examples. Return ONLY valid JSON. Keys = exact destination names, values = "Example1, Example2". Only include categories with real examples.\n\nCategories: ' + catNames + '\n\nFormat: {"Destination Name": "Example 1, Example 2"}';
+    apiCall([{ role: "user", content: prompt }])
+      .then(function(t) {
+        setResults({ city: city, matches: JSON.parse(t) });
+        setLoading(false);
+      })
+      .catch(function() {
+        setResults({ city: city, matches: {} });
+        setLoading(false);
+      });
+  }
+
+  function addCustom() {
+    if (!customInput.trim() || !results) return;
+    setAddingCustom(true); setStatus("Classifying and locating destination...");
+    var catNames = allDest.map(function(d) { return d.name; }).join(", ");
+    var prompt = 'A user wants to add "' + customInput + '" as a wayfinding destination in/near ' + results.city + '. Classify it into the BEST matching category from: ' + catNames + '. If none fit, use "Custom". Provide GPS coordinates and address. Return ONLY valid JSON: {"name":"Full name","category":"Category Name","tier":"BASE CATEGORIES or EXPANDED CATEGORIES","latitude":0,"longitude":0,"address":"address","description":"why it qualifies"}';
+    apiCall([{ role: "user", content: prompt }])
+      .then(function(t) {
+        var parsed = JSON.parse(t);
+        parsed.custom = true;
+        parsed.id = Date.now();
+        setCustomDests(function(prev) { return prev.concat([parsed]); });
+        if (geo) {
+          setGeo(function(prev) { return prev.concat([{ name: parsed.name, category: parsed.category, latitude: parsed.latitude, longitude: parsed.longitude, address: parsed.address, custom: true }]); });
+        }
+        setCustomInput("");
+        setStatus("Added: " + parsed.name + " > " + parsed.category);
+        setTimeout(function() { setStatus(""); }, 4000);
+        setAddingCustom(false);
+      })
+      .catch(function() {
+        setStatus("Error adding destination. Try again.");
+        setTimeout(function() { setStatus(""); }, 3000);
+        setAddingCustom(false);
+      });
+  }
+
+  function removeCustom(id) {
+    var item = customDests.find(function(d) { return d.id === id; });
+    setCustomDests(function(prev) { return prev.filter(function(d) { return d.id !== id; }); });
+    if (item && geo) {
+      setGeo(function(prev) { return prev.filter(function(g) { return !(g.custom && g.name === item.name); }); });
+    }
+  }
+
+  function fetchGeo() {
+    if (geo) return Promise.resolve(geo);
+    if (!results) return Promise.resolve([]);
+    setGeoLoad(true); setStatus("Fetching GPS coordinates...");
+    var parts = [];
+    Object.entries(results.matches).forEach(function(e) {
+      var dn = e[0]; var ex = e[1];
+      ex.split(",").forEach(function(x) { parts.push(x.trim() + " (" + dn + ")"); });
+    });
+    var prompt = "For these places in/near " + results.city + ", give GPS coords. Return ONLY a JSON array. Each: {\"name\",\"category\",\"latitude\",\"longitude\",\"address\"}.\n\nPlaces: " + parts.join("; ");
+    return apiCall([{ role: "user", content: prompt }], 4000)
+      .then(function(t) {
+        var g = JSON.parse(t);
+        customDests.forEach(function(cd) {
+          g.push({ name: cd.name, category: cd.category, latitude: cd.latitude, longitude: cd.longitude, address: cd.address, custom: true });
+        });
+        setGeo(g); setGeoLoad(false); setStatus("");
+        return g;
+      })
+      .catch(function() { setGeoLoad(false); setStatus("Error fetching coords"); return []; });
+  }
+
+  function dlExcel() {
+    if (!results) return;
+    fetchGeo().then(function(g) {
+      setStatus("Building Excel...");
+      var matched = allDest.filter(function(d) { return results.matches[d.name]; }).map(function(d) { return { name: d.name, desc: d.desc, category: d.category, tier: d.tier, ex: results.matches[d.name] }; });
+      var x = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#3D7A4A" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style><Style ss:ID="H2"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#2C5F7C" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style><Style ss:ID="H3"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#8B7355" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style><Style ss:ID="H4"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#7B2CBF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style><Style ss:ID="B"><Font ss:Size="10" ss:FontName="Arial"/><Interior ss:Color="#F0F7F0" ss:Pattern="Solid"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style><Style ss:ID="E"><Font ss:Size="10" ss:FontName="Arial"/><Interior ss:Color="#FFF5F5" ss:Pattern="Solid"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style><Style ss:ID="C"><Font ss:Size="10" ss:FontName="Arial"/><Interior ss:Color="#F5F0FF" ss:Pattern="Solid"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style><Style ss:ID="N"><Font ss:Size="10" ss:FontName="Arial"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style><Style ss:ID="T"><Font ss:Bold="1" ss:Size="14" ss:FontName="Arial" ss:Color="#333333"/></Style></Styles>';
+      x += '<Worksheet ss:Name="City Destinations"><Table><Column ss:Width="200"/><Column ss:Width="160"/><Column ss:Width="100"/><Column ss:Width="250"/><Column ss:Width="400"/>';
+      x += '<Row><Cell ss:StyleID="T"><Data ss:Type="String">Wayfinding - ' + xmlEsc(results.city) + '</Data></Cell></Row><Row/>';
+      x += '<Row><Cell ss:StyleID="H"><Data ss:Type="String">Destination Type</Data></Cell><Cell ss:StyleID="H"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="H"><Data ss:Type="String">Tier</Data></Cell><Cell ss:StyleID="H"><Data ss:Type="String">Local Examples</Data></Cell><Cell ss:StyleID="H"><Data ss:Type="String">Inclusion Criteria</Data></Cell></Row>';
+      matched.forEach(function(d) {
+        var s = d.tier === "BASE CATEGORIES" ? "B" : "E";
+        x += '<Row><Cell ss:StyleID="' + s + '"><Data ss:Type="String">' + xmlEsc(d.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + (d.tier === "BASE CATEGORIES" ? "Base" : "Expanded") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.ex) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.desc) + '</Data></Cell></Row>';
+      });
+      if (customDests.length > 0) {
+        x += '<Row/><Row><Cell ss:StyleID="H4"><Data ss:Type="String">Custom Added</Data></Cell><Cell ss:StyleID="H4"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="H4"><Data ss:Type="String">Tier</Data></Cell><Cell ss:StyleID="H4"><Data ss:Type="String">Coordinates</Data></Cell><Cell ss:StyleID="H4"><Data ss:Type="String">Description</Data></Cell></Row>';
+        customDests.forEach(function(d) {
+          x += '<Row><Cell ss:StyleID="C"><Data ss:Type="String">' + xmlEsc(d.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + (d.tier === "BASE CATEGORIES" ? "Base" : "Expanded") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + d.latitude.toFixed(6) + ', ' + d.longitude.toFixed(6) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.description || "") + '</Data></Cell></Row>';
+        });
+      }
+      x += '</Table></Worksheet>';
+      x += '<Worksheet ss:Name="GIS Coordinates"><Table><Column ss:Width="200"/><Column ss:Width="160"/><Column ss:Width="100"/><Column ss:Width="100"/><Column ss:Width="300"/><Column ss:Width="80"/><Column ss:Width="250"/>';
+      x += '<Row><Cell ss:StyleID="H2"><Data ss:Type="String">Name</Data></Cell><Cell ss:StyleID="H2"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="H2"><Data ss:Type="String">Latitude</Data></Cell><Cell ss:StyleID="H2"><Data ss:Type="String">Longitude</Data></Cell><Cell ss:StyleID="H2"><Data ss:Type="String">Address</Data></Cell><Cell ss:StyleID="H2"><Data ss:Type="String">Source</Data></Cell><Cell ss:StyleID="H2"><Data ss:Type="String">WKT</Data></Cell></Row>';
+      (g || []).forEach(function(l) {
+        x += '<Row><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(l.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(l.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="Number">' + l.latitude + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="Number">' + l.longitude + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(l.address || "") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + (l.custom ? "Custom" : "Auto") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">POINT (' + l.longitude + ' ' + l.latitude + ')</Data></Cell></Row>';
+      });
+      x += '</Table></Worksheet>';
+      x += '<Worksheet ss:Name="All Criteria"><Table><Column ss:Width="200"/><Column ss:Width="160"/><Column ss:Width="100"/><Column ss:Width="450"/>';
+      x += '<Row><Cell ss:StyleID="H3"><Data ss:Type="String">Destination Type</Data></Cell><Cell ss:StyleID="H3"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="H3"><Data ss:Type="String">Tier</Data></Cell><Cell ss:StyleID="H3"><Data ss:Type="String">Criteria</Data></Cell></Row>';
+      allDest.forEach(function(d) {
+        x += '<Row><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + (d.tier === "BASE CATEGORIES" ? "Base" : "Expanded") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.desc) + '</Data></Cell></Row>';
+      });
+      x += '</Table></Worksheet></Workbook>';
+      download(x, "Wayfinding_" + results.city.replace(/\s+/g, "_") + ".xls", "application/vnd.ms-excel");
+      setStatus("Excel downloaded"); setTimeout(function() { setStatus(""); }, 3000);
+    });
+  }
+
+  function dlCSV() {
+    if (!results) return;
+    fetchGeo().then(function(g) {
+      if (!g || !g.length) return;
+      setStatus("Building CSV...");
+      var csv = "Name,Description,Latitude,Longitude,Address,Category,Source\n";
+      g.forEach(function(l) {
+        csv += csvEsc(l.name) + "," + csvEsc("Wayfinding: " + l.category) + "," + csvEsc(l.latitude) + "," + csvEsc(l.longitude) + "," + csvEsc(l.address || "") + "," + csvEsc(l.category) + "," + csvEsc(l.custom ? "Custom" : "Auto") + "\n";
+      });
+      download(csv, "Wayfinding_GIS_" + results.city.replace(/\s+/g, "_") + ".csv", "text/csv;charset=utf-8;");
+      setStatus("CSV ready - Import into Google My Maps"); setTimeout(function() { setStatus(""); }, 5000);
+    });
+  }
+
+  var matched = results ? allDest.filter(function(d) { return results.matches[d.name]; }).map(function(d) { return { name: d.name, desc: d.desc, category: d.category, tier: d.tier, examples: results.matches[d.name] }; }) : [];
+  var allCats = [];
+  var seen = {};
+  matched.forEach(function(d) { if (!seen[d.category]) { seen[d.category] = true; allCats.push(d.category); } });
+  customDests.forEach(function(d) { if (!seen[d.category]) { seen[d.category] = true; allCats.push(d.category); } });
+  var filtered = selCat ? matched.filter(function(d) { return d.category === selCat; }) : matched;
+  var filteredCustom = selCat ? customDests.filter(function(d) { return d.category === selCat; }) : customDests;
+
+  return (
+    <div style={{minHeight:"100vh",background:"#FFFFFF",fontFamily:"'Instrument Sans',system-ui,sans-serif",color:"#1a1a1a"}}>
+      <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+      <style>{
+        "@keyframes spin{to{transform:rotate(360deg)}}" +
+        "@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}" +
+        "@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}" +
+        ".dlb{transition:all .2s}.dlb:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.1)}" +
+        "input::placeholder{color:#aaa}"
+      }</style>
+      <div style={{maxWidth:1100,margin:"0 auto",padding:"0 24px"}}>
+
+        <header style={{paddingTop:40,paddingBottom:results?24:60,borderBottom:"1px solid #eee",marginBottom:32}}>
+          <img src={LOGO} alt="Merje" style={{height:32,marginBottom:20,display:"block"}} />
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:GREEN}}/>
+            <span style={{fontSize:11,fontWeight:600,letterSpacing:3,textTransform:"uppercase",color:WARM}}>Community Wayfinding Program</span>
+          </div>
+          <h1 style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:results?32:48,fontWeight:900,lineHeight:1.1,margin:"0 0 12px",color:"#1a1a1a"}}>Destination Finder</h1>
+          {!results && <p style={{fontSize:15,color:"#666",maxWidth:560,lineHeight:1.6,margin:0}}>Search any city to discover qualifying wayfinding destinations. Add custom destinations, then export for Google My Maps or ArcGIS.</p>}
+        </header>
+
+        <div style={{display:"flex",gap:12,marginBottom:20}}>
+          <div style={{flex:1,background:"#f8f8f8",border:"1px solid #ddd",borderRadius:10,overflow:"hidden"}}>
+            <input type="text" value={city} onChange={function(e){setCity(e.target.value)}} onKeyDown={function(e){if(e.key==="Enter")search()}} placeholder="Enter a city (e.g. Philadelphia, Austin, San Diego)" style={{width:"100%",padding:"16px 18px",background:"transparent",border:"none",color:"#1a1a1a",fontSize:15,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+          </div>
+          <button onClick={search} disabled={loading||!city.trim()} style={{padding:"16px 28px",background:loading?"#ccc":GREEN,color:"#fff",border:"none",borderRadius:10,fontSize:14,fontWeight:700,fontFamily:"inherit",cursor:loading?"wait":"pointer",whiteSpace:"nowrap"}}>{loading?"Searching...":"Search City"}</button>
+        </div>
+
+        {results && <div style={{marginBottom:20}}>
+          {!showAddPanel ?
+            <button onClick={function(){setShowAddPanel(true)}} style={{background:"#fff",border:"1px solid #7B2CBF",color:"#7B2CBF",padding:"10px 20px",borderRadius:8,fontSize:13,fontFamily:"inherit",cursor:"pointer",fontWeight:600}}>+ Add Custom Destination</button>
+          :
+            <div style={{background:"#faf5ff",border:"1px solid #e0d0f0",borderRadius:12,padding:20,animation:"fadeIn .3s ease"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                <span style={{fontSize:13,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:"#7B2CBF"}}>Add Custom Destination</span>
+                <button onClick={function(){setShowAddPanel(false)}} style={{background:"none",border:"none",color:"#999",cursor:"pointer",fontSize:16,fontFamily:"inherit"}}>x</button>
+              </div>
+              <p style={{fontSize:12,color:"#666",margin:"0 0 12px",lineHeight:1.5}}>Type a place name or address. AI will auto-categorize it, find GPS coordinates, and add it to your exports.</p>
+              <div style={{display:"flex",gap:10}}>
+                <div style={{flex:1,background:"#fff",border:"1px solid #d0c0e0",borderRadius:8,overflow:"hidden"}}>
+                  <input type="text" value={customInput} onChange={function(e){setCustomInput(e.target.value)}} onKeyDown={function(e){if(e.key==="Enter")addCustom()}} placeholder='e.g. "Reading Terminal Market" or "1234 Market St"' style={{width:"100%",padding:"12px 14px",background:"transparent",border:"none",color:"#1a1a1a",fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
+                </div>
+                <button onClick={addCustom} disabled={addingCustom||!customInput.trim()} style={{padding:"12px 22px",background:addingCustom?"#ccc":"#7B2CBF",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:700,fontFamily:"inherit",cursor:addingCustom?"wait":"pointer",whiteSpace:"nowrap"}}>{addingCustom?"Adding...":"Add"}</button>
+              </div>
+              {customDests.length>0 && <div style={{marginTop:16}}>
+                <div style={{fontSize:11,fontWeight:600,color:"#7B2CBF",letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>{customDests.length} Custom Destination{customDests.length>1?"s":""}</div>
+                {customDests.map(function(d) { return (
+                  <div key={d.id} style={{display:"flex",alignItems:"center",gap:12,background:"#fff",borderRadius:8,padding:"10px 14px",border:"1px solid #e0d0f0",marginBottom:6}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:600}}>{d.name}</div>
+                      <div style={{fontSize:11,color:"#888"}}>{d.category} | {d.latitude.toFixed(4)}, {d.longitude.toFixed(4)}{d.address?" | "+d.address:""}</div>
+                    </div>
+                    <span style={{fontSize:9,fontWeight:600,letterSpacing:1,color:d.tier==="BASE CATEGORIES"?"#3D7A4A":"#C05621",background:d.tier==="BASE CATEGORIES"?"#f0f7f0":"#fff5f0",padding:"3px 8px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>{d.tier==="BASE CATEGORIES"?"Base":"Expanded"}</span>
+                    <button onClick={function(){removeCustom(d.id)}} style={{background:"none",border:"none",color:"#c00",cursor:"pointer",fontSize:13,padding:4}}>x</button>
+                  </div>
+                ); })}
+              </div>}
+            </div>
+          }
+        </div>}
+
+        <div style={{display:"flex",flexWrap:"wrap",gap:10,marginBottom:30,alignItems:"center"}}>
+          <button onClick={function(){setShowRef(!showRef);setResults(null);setGeo(null);setCustomDests([])}} style={{background:"#fff",border:"1px solid #ddd",color:"#666",padding:"10px 18px",borderRadius:8,fontSize:13,fontFamily:"inherit",cursor:"pointer",fontWeight:500}}>{showRef?"Close Reference":"Browse All Criteria"}</button>
+          {results && (matched.length>0||customDests.length>0) && <div style={{display:"contents"}}>
+            <button className="dlb" onClick={dlExcel} disabled={geoLoad} style={{background:"#3D7A4A",border:"none",color:"#fff",padding:"10px 18px",borderRadius:8,fontSize:13,fontFamily:"inherit",cursor:geoLoad?"wait":"pointer",fontWeight:600}}>Download Excel</button>
+            <button className="dlb" onClick={dlCSV} disabled={geoLoad} style={{background:"#2C5F7C",border:"none",color:"#fff",padding:"10px 18px",borderRadius:8,fontSize:13,fontFamily:"inherit",cursor:geoLoad?"wait":"pointer",fontWeight:600}}>Download GIS CSV</button>
+          </div>}
+          {(status||geoLoad) && <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:GREEN,fontWeight:500,animation:geoLoad?"pulse 1.5s ease infinite":"none",maxWidth:400}}>
+            {geoLoad && <div style={{width:12,height:12,border:"2px solid #ddd",borderTopColor:GREEN,borderRadius:"50%",animation:"spin .8s linear infinite",flexShrink:0}}/>}
+            {status}
+          </div>}
+        </div>
+
+        {loading && <div style={{textAlign:"center",padding:60}}>
+          <div style={{width:36,height:36,border:"3px solid #eee",borderTopColor:GREEN,borderRadius:"50%",animation:"spin .8s linear infinite",margin:"0 auto 16px"}}/>
+          <p style={{color:"#888",fontSize:14}}>Finding destinations in {city}...</p>
+        </div>}
+
+        {results && !loading && <div>
+          <div style={{display:"flex",alignItems:"baseline",gap:12,marginBottom:20}}>
+            <h2 style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:26,fontWeight:700,margin:0,color:"#1a1a1a"}}>{results.city}</h2>
+            <span style={{fontSize:13,color:GREEN,fontWeight:600}}>{matched.length+customDests.length} destinations</span>
+            {customDests.length>0 && <span style={{fontSize:12,color:"#7B2CBF",fontWeight:600}}>({customDests.length} custom)</span>}
+          </div>
+
+          {geo && geo.length>0 && <div style={{background:"#f8faf8",border:"1px solid #e8efe8",borderRadius:10,padding:14,marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:600,color:"#3D7A4A",letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>{geo.length} locations with GPS coordinates</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {geo.slice(0,8).map(function(l,i) { return <span key={i} style={{fontSize:11,background:l.custom?"#f5f0ff":"#f0f7f0",color:l.custom?"#7B2CBF":"#3D7A4A",padding:"4px 10px",borderRadius:6,border:l.custom?"1px solid #e0d0f0":"1px solid #d0e8d0"}}>{l.name} ({l.latitude.toFixed(4)}, {l.longitude.toFixed(4)})</span>; })}
+              {geo.length>8 && <span style={{fontSize:11,color:"#999",padding:"4px 6px"}}>+{geo.length-8} more</span>}
+            </div>
+          </div>}
+
+          {allCats.length>0 && <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:28}}>
+            <button onClick={function(){setSelCat(null)}} style={{padding:"8px 16px",borderRadius:20,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",border:selCat===null?"1px solid "+GREEN:"1px solid #ddd",background:selCat===null?GREEN+"15":"#f8f8f8",color:selCat===null?GREEN:"#666"}}>All ({matched.length+customDests.length})</button>
+            {allCats.map(function(c) {
+              var n = matched.filter(function(d){return d.category===c}).length + customDests.filter(function(d){return d.category===c}).length;
+              var col = CAT_COLORS[c] || GREEN;
+              return <button key={c} onClick={function(){setSelCat(selCat===c?null:c)}} style={{padding:"8px 16px",borderRadius:20,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",border:selCat===c?"1px solid "+col:"1px solid #ddd",background:selCat===c?col+"15":"#f8f8f8",color:selCat===c?col:"#666"}}>{c} ({n})</button>;
+            })}
+          </div>}
+
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:14,paddingBottom:60}}>
+            {filtered.map(function(d,i) {
+              var col = CAT_COLORS[d.category] || GREEN;
+              var isEx = expanded === d.name;
+              return (
+                <div key={d.name} onClick={function(){setExpanded(isEx?null:d.name)}} style={{background:isEx?"#f8f8f8":"#fff",border:"1px solid "+(isEx?"#ccc":"#eee"),borderRadius:10,padding:20,cursor:"pointer",position:"relative",overflow:"hidden",animation:"fadeIn .3s ease "+i*0.02+"s both"}}>
+                  <div style={{position:"absolute",top:0,left:0,width:3,height:"100%",background:col}}/>
+                  <div style={{paddingLeft:8}}>
+                    <h3 style={{margin:0,fontSize:14,fontWeight:700,lineHeight:1.3,marginBottom:4,color:"#1a1a1a"}}>{d.name}</h3>
+                    <span style={{fontSize:10,fontWeight:600,letterSpacing:1.5,color:col,textTransform:"uppercase"}}>{d.category}</span>
+                    {d.examples && <p style={{margin:"8px 0 0",fontSize:13,color:"#555",fontWeight:500,lineHeight:1.4}}>{d.examples}</p>}
+                    {isEx && <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid #eee"}}>
+                      <p style={{margin:0,fontSize:13,color:"#666",lineHeight:1.7}}><strong style={{color:"#333"}}>Criteria:</strong> {d.desc}</p>
+                      <span style={{display:"inline-block",marginTop:8,fontSize:10,fontWeight:600,letterSpacing:1,color:d.tier==="BASE CATEGORIES"?"#3D7A4A":"#C05621",background:d.tier==="BASE CATEGORIES"?"#f0f7f0":"#fff5f0",padding:"4px 10px",borderRadius:4,textTransform:"uppercase"}}>{d.tier==="BASE CATEGORIES"?"Base Category":"Expanded - May Require Approval"}</span>
+                    </div>}
+                  </div>
+                </div>
+              );
+            })}
+            {filteredCustom.map(function(d,i) {
+              var isEx = expanded === "custom-"+d.id;
+              return (
+                <div key={"c-"+d.id} onClick={function(){setExpanded(isEx?null:"custom-"+d.id)}} style={{background:isEx?"#faf5ff":"#fff",border:"1px solid "+(isEx?"#d0c0e0":"#eee"),borderRadius:10,padding:20,cursor:"pointer",position:"relative",overflow:"hidden",animation:"fadeIn .3s ease "+(filtered.length+i)*0.02+"s both"}}>
+                  <div style={{position:"absolute",top:0,left:0,width:3,height:"100%",background:"#7B2CBF"}}/>
+                  <div style={{position:"absolute",top:8,right:10,fontSize:9,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:"#7B2CBF",background:"#f0e6ff",padding:"2px 8px",borderRadius:4}}>Custom</div>
+                  <div style={{paddingLeft:8}}>
+                    <h3 style={{margin:0,fontSize:14,fontWeight:700,lineHeight:1.3,marginBottom:4,color:"#1a1a1a"}}>{d.name}</h3>
+                    <span style={{fontSize:10,fontWeight:600,letterSpacing:1.5,color:"#7B2CBF",textTransform:"uppercase"}}>{d.category}</span>
+                    <p style={{margin:"8px 0 0",fontSize:12,color:"#888",lineHeight:1.4}}>{d.latitude.toFixed(4)}, {d.longitude.toFixed(4)}{d.address?" - "+d.address:""}</p>
+                    {isEx && <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid #eee"}}>
+                      {d.description && <p style={{margin:"0 0 8px",fontSize:13,color:"#666",lineHeight:1.7}}>{d.description}</p>}
+                      <span style={{display:"inline-block",fontSize:10,fontWeight:600,letterSpacing:1,color:d.tier==="BASE CATEGORIES"?"#3D7A4A":"#C05621",background:d.tier==="BASE CATEGORIES"?"#f0f7f0":"#fff5f0",padding:"4px 10px",borderRadius:4,textTransform:"uppercase"}}>{d.tier==="BASE CATEGORIES"?"Base":"Expanded"}</span>
+                    </div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>}
+
+        {showRef && !results && <div style={{paddingBottom:60}}>
+          <h2 style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:26,fontWeight:700,margin:"0 0 8px",color:"#1a1a1a"}}>All Inclusion Criteria</h2>
+          <p style={{color:"#888",fontSize:14,marginBottom:28,lineHeight:1.6}}>Complete reference of destination types for Community Wayfinding Programs.</p>
+          {Object.entries(DEST).map(function(tierEntry) {
+            var tier = tierEntry[0]; var cats = tierEntry[1];
+            return <div key={tier} style={{marginBottom:36}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:18}}>
+                <span style={{fontSize:11,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",color:tier==="BASE CATEGORIES"?GREEN:WARM}}>{tier}</span>
+                <div style={{flex:1,height:1,background:"#eee"}}/>
+              </div>
+              {Object.entries(cats).map(function(catEntry) {
+                var cat = catEntry[0]; var items = catEntry[1];
+                return <div key={cat} style={{marginBottom:24}}>
+                  <h3 style={{fontSize:12,fontWeight:700,letterSpacing:1,color:CAT_COLORS[cat]||GREEN,marginBottom:12,textTransform:"uppercase"}}>{cat}</h3>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:10}}>
+                    {items.map(function(item) { return <div key={item.n} style={{background:"#f8f8f8",border:"1px solid #eee",borderRadius:8,padding:16}}>
+                      <h4 style={{margin:"0 0 6px",fontSize:13,fontWeight:700,color:"#1a1a1a"}}>{item.n}</h4>
+                      <p style={{margin:0,fontSize:12,color:"#888",lineHeight:1.6}}>{item.d}</p>
+                    </div>; })}
+                  </div>
+                </div>;
+              })}
+            </div>;
+          })}
+        </div>}
+
+        {!results && !loading && !showRef && <div style={{textAlign:"center",padding:"40px 20px 80px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:14,maxWidth:640,margin:"0 auto"}}>
+            {["Attractions","Cultural","Districts","Government","Historical","Recreation","Transport","Commercial"].map(function(l,i) { return <div key={l} style={{background:"#f8f8f8",border:"1px solid #eee",borderRadius:10,padding:"22px 14px",animation:"fadeIn .4s ease "+i*0.06+"s both"}}>
+              <span style={{fontSize:11,fontWeight:600,letterSpacing:1,color:"#888",textTransform:"uppercase"}}>{l}</span>
+            </div>; })}
+          </div>
+          <p style={{color:"#bbb",fontSize:13,marginTop:24}}>Search a city above to discover qualifying destinations</p>
+        </div>}
+
+        <footer style={{borderTop:"1px solid #eee",padding:"24px 0",marginTop:40,textAlign:"center"}}>
+          <img src={LOGO} alt="Merje" style={{height:20,opacity:0.4}}/>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
