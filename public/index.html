@@ -274,18 +274,84 @@ function App() {
     fetchGeo().then(function(g) {
       setStatus("Building Excel...");
       var matched = allDest.filter(function(d) { return results.matches[d.name]; }).map(function(d) { return { name: d.name, desc: d.desc, category: d.category, tier: d.tier, ex: results.matches[d.name] }; });
-      var x = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#3D7A4A" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style><Style ss:ID="H2"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#2C5F7C" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style><Style ss:ID="H3"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#8B7355" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style><Style ss:ID="H4"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#7B2CBF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style><Style ss:ID="B"><Font ss:Size="10" ss:FontName="Arial"/><Interior ss:Color="#F0F7F0" ss:Pattern="Solid"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style><Style ss:ID="E"><Font ss:Size="10" ss:FontName="Arial"/><Interior ss:Color="#FFF5F5" ss:Pattern="Solid"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style><Style ss:ID="C"><Font ss:Size="10" ss:FontName="Arial"/><Interior ss:Color="#F5F0FF" ss:Pattern="Solid"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style><Style ss:ID="N"><Font ss:Size="10" ss:FontName="Arial"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style><Style ss:ID="T"><Font ss:Bold="1" ss:Size="14" ss:FontName="Arial" ss:Color="#333333"/></Style></Styles>';
-      x += '<Worksheet ss:Name="City Destinations"><Table><Column ss:Width="200"/><Column ss:Width="160"/><Column ss:Width="100"/><Column ss:Width="250"/><Column ss:Width="400"/>';
-      x += '<Row><Cell ss:StyleID="T"><Data ss:Type="String">Wayfinding - ' + xmlEsc(results.city) + '</Data></Cell></Row><Row/>';
-      x += '<Row><Cell ss:StyleID="H"><Data ss:Type="String">Destination Type</Data></Cell><Cell ss:StyleID="H"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="H"><Data ss:Type="String">Tier</Data></Cell><Cell ss:StyleID="H"><Data ss:Type="String">Local Examples</Data></Cell><Cell ss:StyleID="H"><Data ss:Type="String">Inclusion Criteria</Data></Cell></Row>';
-      matched.forEach(function(d) {
-        var s = d.tier === "BASE CATEGORIES" ? "B" : "E";
-        x += '<Row><Cell ss:StyleID="' + s + '"><Data ss:Type="String">' + xmlEsc(d.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + (d.tier === "BASE CATEGORIES" ? "Base" : "Expanded") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.ex) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.desc) + '</Data></Cell></Row>';
+      var baseMatched = matched.filter(function(d) { return d.tier === "BASE CATEGORIES"; });
+      var expMatched = matched.filter(function(d) { return d.tier !== "BASE CATEGORIES"; });
+      var x = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles>';
+      x += '<Style ss:ID="SEC"><Font ss:Bold="1" ss:Size="14" ss:FontName="Arial" ss:Color="#000000"/></Style>';
+      x += '<Style ss:ID="HD"><Font ss:Bold="1" ss:Size="10" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#000000" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1" ss:Vertical="Center"/></Style>';
+      x += '<Style ss:ID="HG"><Font ss:Bold="1" ss:Size="10" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#808080" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1" ss:Vertical="Center"/></Style>';
+      x += '<Style ss:ID="N"><Font ss:Size="10" ss:FontName="Arial"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style>';
+      x += '<Style ss:ID="RC"><Font ss:Size="10" ss:FontName="Arial" ss:Color="#FF0000"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style>';
+      x += '<Style ss:ID="H2"><Font ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF" ss:FontName="Arial"/><Interior ss:Color="#2C5F7C" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:WrapText="1"/></Style>';
+      x += '</Styles>';
+      x += '<Worksheet ss:Name="Destination List"><Table><Column ss:Width="90"/><Column ss:Width="180"/><Column ss:Width="230"/><Column ss:Width="80"/><Column ss:Width="250"/>';
+      x += '<Row/><Row/><Row/>';
+      x += '<Row><Cell ss:StyleID="SEC" ss:MergeAcross="1"><Data ss:Type="String">BASE DESTINATIONS</Data></Cell></Row>';
+      x += '<Row/>';
+      x += '<Row><Cell ss:StyleID="HD"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="HD"><Data ss:Type="String">Type</Data></Cell><Cell ss:StyleID="HG"><Data ss:Type="String">Destination</Data></Cell><Cell ss:StyleID="HG"><Data ss:Type="String">Vehicular / \nPedestrian</Data></Cell><Cell ss:StyleID="HD"><Data ss:Type="String">Comments</Data></Cell></Row>';
+      x += '<Row/>';
+      var lastCat = "";
+      baseMatched.forEach(function(d) {
+        var examples = (d.ex || "").split(",");
+        var showCat = d.category !== lastCat;
+        lastCat = d.category;
+        examples.forEach(function(ex, ei) {
+          ex = ex.trim();
+          if (!ex) return;
+          x += "<Row>";
+          if (ei === 0 && showCat) {
+            x += '<Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.category.replace("CULTURAL / INSTITUTIONAL","Cultural / Inst.").replace("HISTORICAL / ARCHITECTURAL","Historic Site").replace("ATTRACTIONS","Attraction").replace("DISTRICTS","District").replace("GOVERNMENT","Government").replace("RECREATIONAL","Recreational").replace("TOURIST SERVICES","Visitor Services").replace("TRANSPORTATION","Transportation")) + '</Data></Cell>';
+          } else {
+            x += '<Cell ss:StyleID="N"><Data ss:Type="String"></Data></Cell>';
+          }
+          if (ei === 0) {
+            x += '<Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.name) + '</Data></Cell>';
+          } else {
+            x += '<Cell ss:StyleID="N"><Data ss:Type="String"></Data></Cell>';
+          }
+          x += '<Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(ex) + '</Data></Cell>';
+          x += '<Cell ss:StyleID="N"><Data ss:Type="String">Vehicular</Data></Cell>';
+          x += '<Cell ss:StyleID="N"><Data ss:Type="String"></Data></Cell>';
+          x += "</Row>";
+        });
+        x += "<Row/>";
       });
       if (customDests.length > 0) {
-        x += '<Row/><Row><Cell ss:StyleID="H4"><Data ss:Type="String">Custom Added</Data></Cell><Cell ss:StyleID="H4"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="H4"><Data ss:Type="String">Tier</Data></Cell><Cell ss:StyleID="H4"><Data ss:Type="String">Coordinates</Data></Cell><Cell ss:StyleID="H4"><Data ss:Type="String">Description</Data></Cell></Row>';
-        customDests.forEach(function(d) {
-          x += '<Row><Cell ss:StyleID="C"><Data ss:Type="String">' + xmlEsc(d.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + (d.tier === "BASE CATEGORIES" ? "Base" : "Expanded") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + d.latitude.toFixed(6) + ', ' + d.longitude.toFixed(6) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.description || "") + '</Data></Cell></Row>';
+        customDests.filter(function(cd) { return cd.tier === "BASE CATEGORIES"; }).forEach(function(cd) {
+          x += '<Row><Cell ss:StyleID="N"><Data ss:Type="String">Custom</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(cd.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(cd.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">Vehicular</Data></Cell><Cell ss:StyleID="RC"><Data ss:Type="String">Custom Added</Data></Cell></Row><Row/>';
+        });
+      }
+      x += '<Row><Cell ss:StyleID="SEC" ss:MergeAcross="1"><Data ss:Type="String">ENHANCED DESTINATIONS</Data></Cell></Row>';
+      x += '<Row><Cell ss:StyleID="HD"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="HD"><Data ss:Type="String">Type</Data></Cell><Cell ss:StyleID="HG"><Data ss:Type="String">Destination</Data></Cell><Cell ss:StyleID="HG"><Data ss:Type="String">Vehicular / \nPedestrian</Data></Cell><Cell ss:StyleID="HD"><Data ss:Type="String">Comments</Data></Cell></Row>';
+      lastCat = "";
+      expMatched.forEach(function(d) {
+        var examples = (d.ex || "").split(",");
+        var showCat = d.category !== lastCat;
+        lastCat = d.category;
+        examples.forEach(function(ex, ei) {
+          ex = ex.trim();
+          if (!ex) return;
+          x += "<Row>";
+          if (ei === 0 && showCat) {
+            x += '<Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.category.replace("COMMERCIAL DESTINATIONS","Commercial")) + '</Data></Cell>';
+          } else {
+            x += '<Cell ss:StyleID="N"><Data ss:Type="String"></Data></Cell>';
+          }
+          if (ei === 0) {
+            x += '<Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.name) + '</Data></Cell>';
+          } else {
+            x += '<Cell ss:StyleID="N"><Data ss:Type="String"></Data></Cell>';
+          }
+          x += '<Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(ex) + '</Data></Cell>';
+          x += '<Cell ss:StyleID="N"><Data ss:Type="String">Vehicular</Data></Cell>';
+          x += '<Cell ss:StyleID="RC"><Data ss:Type="String">Agency Approval Required</Data></Cell>';
+          x += "</Row>";
+        });
+        x += "<Row/>";
+      });
+      if (customDests.length > 0) {
+        customDests.filter(function(cd) { return cd.tier !== "BASE CATEGORIES"; }).forEach(function(cd) {
+          x += '<Row><Cell ss:StyleID="N"><Data ss:Type="String">Custom</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(cd.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(cd.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">Vehicular</Data></Cell><Cell ss:StyleID="RC"><Data ss:Type="String">Custom Added</Data></Cell></Row><Row/>';
         });
       }
       x += '</Table></Worksheet>';
@@ -294,14 +360,8 @@ function App() {
       (g || []).forEach(function(l) {
         x += '<Row><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(l.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(l.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="Number">' + l.latitude + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="Number">' + l.longitude + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(l.address || "") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + (l.custom ? "Custom" : "Auto") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">POINT (' + l.longitude + ' ' + l.latitude + ')</Data></Cell></Row>';
       });
-      x += '</Table></Worksheet>';
-      x += '<Worksheet ss:Name="All Criteria"><Table><Column ss:Width="200"/><Column ss:Width="160"/><Column ss:Width="100"/><Column ss:Width="450"/>';
-      x += '<Row><Cell ss:StyleID="H3"><Data ss:Type="String">Destination Type</Data></Cell><Cell ss:StyleID="H3"><Data ss:Type="String">Category</Data></Cell><Cell ss:StyleID="H3"><Data ss:Type="String">Tier</Data></Cell><Cell ss:StyleID="H3"><Data ss:Type="String">Criteria</Data></Cell></Row>';
-      allDest.forEach(function(d) {
-        x += '<Row><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.name) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.category) + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + (d.tier === "BASE CATEGORIES" ? "Base" : "Expanded") + '</Data></Cell><Cell ss:StyleID="N"><Data ss:Type="String">' + xmlEsc(d.desc) + '</Data></Cell></Row>';
-      });
       x += '</Table></Worksheet></Workbook>';
-      download(x, "Wayfinding_" + results.city.replace(/\s+/g, "_") + ".xls", "application/vnd.ms-excel");
+      download(x, results.city.replace(/\s+/g, "_") + "_Destination_List.xls", "application/vnd.ms-excel");
       setStatus("Excel downloaded"); setTimeout(function() { setStatus(""); }, 3000);
     });
   }
